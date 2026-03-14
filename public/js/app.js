@@ -207,11 +207,16 @@ function getAvatar(name) {
   let h = 0; for (const c of String(name)) h = (h * 31 + c.charCodeAt(0)) % e.length; return e[h]
 }
 function timeAgo(iso) {
-  const d = Date.now() - new Date(iso).getTime()
-  if (d < 60000) return 'Baru saja'
-  if (d < 3600000) return Math.floor(d/60000) + ' menit lalu'
+  if (!iso) return ''
+  const date = new Date(iso)
+  if (isNaN(date.getTime()) || date.getFullYear() < 2000) return ''
+  const d = Date.now() - date.getTime()
+  if (d < 0)        return 'Baru saja'
+  if (d < 60000)    return 'Baru saja'
+  if (d < 3600000)  return Math.floor(d/60000) + ' menit lalu'
   if (d < 86400000) return Math.floor(d/3600000) + ' jam lalu'
-  return Math.floor(d/86400000) + ' hari lalu'
+  if (d < 2592000000) return Math.floor(d/86400000) + ' hari lalu'
+  return date.toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' })
 }
 function showToast(msg, isErr = false) {
   const t = document.getElementById('toast')
