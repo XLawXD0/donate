@@ -1,0 +1,11 @@
+{
+  "name": "kopidev-donasi",
+  "version": "1.0.0",
+  "description": "Web donasi KopiDev dengan QRIS otomatis",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "mongodb": "^6.3.0"
+  }
+}

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traktir Kami Kopi ☕</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">☕ KopiDev</div>
+  <div class="badge">Open Source</div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <div class="cup">☕</div>
+    <h1>Traktir Kami <span>Kopi!</span></h1>
+    <p>Bantu kami tetap gratis dan terus berkembang.<br>Donasi sekecil apapun sangat berarti!</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="icon">👥</div>
+      <div class="val" id="statCount">—</div>
+      <div class="lbl">Supporters</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon">💰</div>
+      <div class="val" id="statTotal">—</div>
+      <div class="lbl">Total Donasi</div>
+    </div>
+  </div>
+
+  <!-- MANFAAT -->
+  <div class="card">
+    <div class="card-title">🎯 Dukunganmu Untuk</div>
+    <ul class="benefit-list">
+      <li>🖥️ Biaya server &amp; hosting</li>
+      <li>⚡ Pengembangan fitur baru</li>
+      <li>🔧 Maintenance &amp; bug fixes</li>
+      <li>📖 Dokumentasi lebih baik</li>
+    </ul>
+    <div class="note-box">
+      <span>ℹ️</span>
+      <span>Ini donasi sukarela! Tidak ada benefit premium. Semua fitur tetap gratis untuk semua pengguna.</span>
+    </div>
+  </div>
+
+  <!-- FORM DONASI -->
+  <div class="card">
+    <div class="card-title">💳 Pilih Nominal Donasi</div>
+    <div class="nominal-grid">
+      <button class="nominal-btn" data-amount="1" onclick="pickNominal(this)"><div class="amt">Rp 1</div><div class="desc">🧪 Testing</div></button>
+      <button class="nominal-btn" data-amount="5000"   onclick="pickNominal(this)"><div class="amt">Rp 5.000</div><div class="desc">☕ Kopi Sachet</div></button>
+      <button class="nominal-btn" data-amount="10000"  onclick="pickNominal(this)"><div class="amt">Rp 10.000</div><div class="desc">☕ Kopi Biasa</div></button>
+      <button class="nominal-btn" data-amount="25000"  onclick="pickNominal(this)"><div class="amt">Rp 25.000</div><div class="desc">☕ Kopi Spesial</div></button>
+      <button class="nominal-btn" data-amount="50000"  onclick="pickNominal(this)"><div class="amt">Rp 50.000</div><div class="desc">☕ Kopi + Snack</div></button>
+      <button class="nominal-btn" data-amount="100000" onclick="pickNominal(this)"><div class="amt">Rp 100.000</div><div class="desc">🏆 Kafein Penuh</div></button>
+      <button class="nominal-btn" data-amount="custom" onclick="pickNominal(this)"><div class="amt">✏️ Nominal</div><div class="desc">Lain</div></button>
+    </div>
+    <div class="custom-wrap" id="customWrap">
+      <label>Nominal Donasi</label>
+      <div class="inp-group">
+        <span class="inp-prefix">Rp</span>
+        <input type="number" id="customAmt" class="pfx" placeholder="Masukkan nominal..." min="1000">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">👤 Info Supporter <span class="opt">(opsional)</span></div>
+    <label>Nama / Nickname</label>
+    <input type="text" id="inputName" placeholder="Anonymous" maxlength="30">
+    <label>Pesan / Ucapan</label>
+    <textarea id="inputMsg" placeholder="Semangat terus kak! 🔥" maxlength="200" oninput="document.getElementById('cc').textContent=this.value.length"></textarea>
+    <div class="char-count"><span id="cc">0</span>/200</div>
+    <button class="btn-primary" id="btnGen" onclick="doGenerate()">
+      <div class="spinner"></div>
+      <span class="btn-txt">⚡ Generate QRIS</span>
+    </button>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="card">
+    <div class="lb-header">
+      <div class="card-title" style="margin-bottom:0">🏆 Leaderboard</div>
+      <div class="tabs">
+        <button class="tab active" onclick="setTab('top',this)">TOP</button>
+        <button class="tab" onclick="setTab('new',this)">TERBARU</button>
+      </div>
+    </div>
+    <div id="lb"><div class="lb-loading">☕ Memuat data...</div></div>
+  </div>
+
+</div>
+
+<footer>
+  <strong>🔒 100% Gratis Selamanya</strong><br>
+  Tidak ada fitur berbayar · tidak ada premium tier · tidak ada iklan
+</footer>
+
+<!-- QRIS BOTTOM SHEET -->
+<div class="overlay" id="qrisOverlay">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-title">📱 Scan QRIS</div>
+    <div class="sheet-sub" id="sheetSub">Scan menggunakan dompet digital atau m-banking</div>
+
+    <div class="qris-box">
+      <div class="qris-amount" id="qrisAmt"></div>
+      <div class="qris-random" id="qrisRandom"></div>
+      <div class="qris-img-wrap">
+        <img class="qris-img" id="qrisImg" src="" alt="QRIS">
+      </div>
+      <div class="qris-badge">✅ QRIS · Semua dompet digital &amp; bank</div>
+    </div>
+
+    <div class="timer-row">
+      <div class="timer-circle" id="timerEl">05:00</div>
+      <div class="timer-lbl">Sisa waktu pembayaran</div>
+    </div>
+
+    <div class="poll-status checking" id="pollStatus">
+      <div class="poll-dot blink"></div>
+      <span id="pollText">Menunggu pembayaran · cek otomatis tiap 15 detik...</span>
+    </div>
+
+    <button class="btn-cancel" onclick="cancelOrder()">✕ Batalkan Pembayaran</button>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-card">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Makasih Banyak!</div>
+    <div class="success-msg" id="successMsg"></div>
+    <div class="success-detail" id="successDetail"></div>
+    <button class="btn-done" onclick="closeSuccess()">Kembali ke Halaman Donasi</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>
