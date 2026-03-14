@@ -1,10 +1,24 @@
 // api/check-payment.js
-// GET /api/check-payment?orderId=xxx
-// Return: { paid: bool, expired?: bool, donation?: {...} }
-
 const clientPromise = require('../lib/mongo')
 const { ObjectId }  = require('mongodb')
 const API_BASE = 'https://api.scrlxrd.pp.ua/api/orderkuota'
+
+// Parse tanggal dari scrlxrd — format: "DD/MM/YYYY HH:MM:SS" atau ISO
+function parseTanggal(str) {
+  if (!str) return new Date()
+  // Coba format DD/MM/YYYY HH:MM:SS
+  const match = str.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})$/)
+  if (match) {
+    const [, dd, mm, yyyy, hh, mi, ss] = match
+    const d = new Date(`${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}+07:00`)
+    if (!isNaN(d)) return d
+  }
+  // Coba parse langsung
+  const d = new Date(str)
+  if (!isNaN(d)) return d
+  // Fallback ke sekarang
+  return new Date()
+}
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -28,17 +42,13 @@ module.exports = async function handler(req, res) {
     }
 
     if (!order) return res.status(404).json({ error: 'Order tidak ditemukan' })
-
-    // Sudah paid sebelumnya
     if (order.status === 'paid') return res.status(200).json({ paid: true, alreadyPaid: true })
 
-    // Expired
     if (new Date() > order.expiredAt) {
       await db.collection('orders').updateOne({ _id: order._id }, { $set: { status: 'expired' } })
       return res.status(200).json({ paid: false, expired: true })
     }
 
-    // Cek mutasi scrlxrd
     const apiKey   = process.env.SCRLXRD_API_KEY
     const username = process.env.SCRLXRD_USERNAME
     const token    = process.env.SCRLXRD_TOKEN
@@ -57,9 +67,8 @@ module.exports = async function handler(req, res) {
 
     if (!match) return res.status(200).json({ paid: false })
 
-    // ✅ Match ditemukan — simpan ke donations
     const via    = match.brand?.name || 'QRIS'
-    const paidAt = match.tanggal ? new Date(match.tanggal) : new Date()
+    const paidAt = parseTanggal(match.tanggal)  // ← parse dengan aman
 
     await db.collection('donations').insertOne({
       name:      order.name,
@@ -76,7 +85,7 @@ module.exports = async function handler(req, res) {
     )
 
     return res.status(200).json({
-      paid: true,
+      paid:     true,
       donation: { name: order.name, msg: order.msg, amount: order.amount, via, paidAt: paidAt.toISOString() }
     })
 
